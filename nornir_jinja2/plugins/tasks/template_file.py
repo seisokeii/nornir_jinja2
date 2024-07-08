@@ -13,16 +13,18 @@ def template_file(
     path: str,
     jinja_filters: Optional[FiltersDict] = None,
     jinja_env: Optional[Environment] = None,
+    formatFunc: Optional[Callable[[str], str]] = None,
     **kwargs: Any
 ) -> Result:
     """
-    Renders contants of a file with jinja2. All the host data is available in the template
+    Renders contents of a file with jinja2. All the host data is available in the template
 
     Arguments:
         template: filename
         path: path to dir with templates
         jinja_filters: jinja filters to enable. Defaults to nornir.config.jinja2.filters
         jinja_env: A fully configured jinja2 environment
+        formatFunc: Pass a function to format the rendered template
         **kwargs: additional data to pass to the template
 
     Returns:
@@ -41,5 +43,8 @@ def template_file(
     env.filters.update(jinja_filters)
     t = env.get_template(template)
     text = t.render(host=task.host, **kwargs)
+
+    if formatFunc is not None:
+        text = formatFunc(text)
 
     return Result(host=task.host, result=text)
